@@ -1,26 +1,36 @@
-import { useRouter } from "next/router";
 import { useQuery, useReactiveVar } from "@apollo/client";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { cartItemsVar, Loading2, message } from "../../../apolloClient";
+import { client } from "../../../apolloClient/index";
+import { getAddress, mutatedAddress, mutationOrder } from "../../../graphql";
+import AddressForm from "../../modal/address";
+import Modal2 from "../../modal/modal2";
+import Button from "../../shared/buttons";
 import Bar from "../../shared/texts/Bar";
+import BlockText from "../../shared/texts/BlockText";
 import {
-  CartItemList,
   AddressHeader,
+  CartItemList,
+
+  CompleteButton,
+  CompleteOrder,
+  Key,
+  OrderList,
+  OrderState,
+  PlaceOrder,
+  SingleOrder,
+
+
   UserAddress,
   UserAddressGroup,
-  Key,
   Value,
 } from "../CartComponents";
 import CartItem from "../CartItem";
 import ItemTittle from "../ItemTittle";
-import Form from "./forms";
-import { useEffect, useState } from "react";
-import { getAddress, mutatedAddress, mutationOrder } from "../../../graphql";
-import Button from "../../shared/buttons";
-import Modal2 from "../../modal/modal2";
-import AddressForm from "../../modal/address";
-import { client } from "../../../apolloClient/index";
-import BlockText from "../../shared/texts/BlockText";
+import { justifySpaceBetween } from "../../../utils/display.styled";
+
 
 const InfoContainer2 = styled.div`
   display: grid;
@@ -28,6 +38,12 @@ const InfoContainer2 = styled.div`
   width: 100%;
   padding: 10px;
   margin: 0 auto;
+
+  @media screen and (min-width: 420px) and (max-width: 480px) {
+    display: flex;
+    flex-direction: column;
+    font-size: ${({ theme }) => theme?.fontSizes?.md};
+  }
 `;
 const CartInfoWrap = styled.div`
   flex: 3;
@@ -36,21 +52,15 @@ const CartInfoWrap = styled.div`
 `;
 
 const Hader = styled.div`
-  display: flex;
-  justify-content: space-between;
+  ${justifySpaceBetween}
   width: 100%;
 `;
 const CartTitle = styled.h3``;
 
-const CheckoutForm = ({ children, pocketKhali }) => {
+const CheckoutForm = ({ userID, children, pocketKhali }) => {
   const router = useRouter();
   const cartData = useReactiveVar(cartItemsVar);
-  let userID ;
-  useEffect(()=>{
-    if(typeof window !== undefined){
-      userID = localStorage.getItem("logedInUserId");
-    }
-  },[])
+
   const [addressId, setAddressID] = useState("");
   const { data, loading, refetch } = useQuery(getAddress(userID));
   const [controleModal, setModalcontroleModal] = useState(false);
@@ -93,10 +103,10 @@ const CheckoutForm = ({ children, pocketKhali }) => {
     }
   };
 
-  const placeOrder = async() =>{
-    if(!addressId){
-      message({type : "alert" ,body : "Plz Select an Address"})
-      return
+  const placeOrder = async () => {
+    if (!addressId) {
+      message({ type: "alert", body: "Plz Select an Address" });
+      return;
     }
 
     try {
@@ -108,7 +118,6 @@ const CheckoutForm = ({ children, pocketKhali }) => {
           variantsId: v.variantsId,
         };
       });
-      console.log("is here");
       const { data, error } = await client.mutate({
         mutation: mutationOrder(RefinedCartData, addressId, "cashon"),
       });
@@ -124,41 +133,66 @@ const CheckoutForm = ({ children, pocketKhali }) => {
       setArektaOrderKor(false);
       console.log(error);
     }
-
   };
   if (arektaOrderKor) {
     return (
-      <div
-        style={{
-          position: "fixed",
-          top: "0",
-          backgroundColor: "white",
-          left: 0,
-          width: "100vw",
-          height: "100vh",
-        }}
-      >
-        <Button
-          onClick={() => {
-            setArektaOrderKor(false);
-            router.push("/");
-          }}
-        >
-          {" "}
-          Continue Shopping{" "}
-        </Button>
-        <h1>
-          ধুর ও ফকিন্নি এত কম টাকা অর্ডার করলে তোর গালফ্রেন্ডকে স্কিনশট পাঠাই
-          দিব
-        </h1>
-        <h3>
-          ধন্যবাদ অর্ডার করার জন্য । জীবনে টাকা পয়সা দিয়ে কি হবে ?এত কম টাকার
-          অর্ডার করলে চলে? আরেকটা অর্ডার কর তাইলে খুশি হবো ।
-        </h3>
-
+      <CompleteOrder>
+        <BlockText size="lg">
+          Hey{" "}
+          {createOrderResponse.MakeOrder.ordersInformation.user_ref.username} !
+        </BlockText>
+        <BlockText size="xl" color="primary">
+          Thank you
+        </BlockText>
+        <BlockText size="lg">You order has been completed !</BlockText>
+        <BlockText size="md">You order id is #{createOrderResponse.MakeOrder.ordersInformation.id} </BlockText>
+        {/* <OrderList>
+          <SingleOrder>
+            <OrderState>
+              <BlockText size="md" weight="semiBold">
+                Product Name and quantity
+              </BlockText>
+            </OrderState>
+            <BlockText weight="semiBold">Order Number</BlockText>
+          </SingleOrder>
+          {createOrderResponse.MakeOrder.ordersInformation.ordersItem.map(
+            (item) => (
+              <SingleOrder>
+                <OrderState>
+                  <BlockText size="md" weight="medium">
+                    {item.productName}
+                  </BlockText>
+                  <BlockText>x{item.product_quantity}</BlockText>
+                </OrderState>
+                <BlockText weight="medium">{item.id}</BlockText>
+              </SingleOrder>
+            )
+          )}
+        </OrderList> */}
         <br />
-        <BlockText>{JSON.stringify(createOrderResponse)}</BlockText>
-      </div>
+        <CompleteButton>
+          <Button
+            onClick={() => {
+              setArektaOrderKor(false);
+              router.push("/");
+            }}
+            bg="primary"
+            fontSize="md"
+          >
+            Go Back Home
+          </Button>
+          <Button
+            onClick={() => {
+              setArektaOrderKor(false);
+              router.push("/collections");
+            }}
+            fontSize="md"
+          >
+            Continue Shopping
+          </Button>
+        </CompleteButton>
+        {/* <BlockText>{JSON.stringify(createOrderResponse)}</BlockText> */}
+      </CompleteOrder>
     );
   }
 
@@ -196,7 +230,9 @@ const CheckoutForm = ({ children, pocketKhali }) => {
         {children}
       </InfoContainer2>
       <AddressHeader>
-        <BlockText size="md" weight="medium">Select delivery location</BlockText>
+        <BlockText size="md" weight="medium">
+          Select delivery location
+        </BlockText>
         <Button onClick={() => setModalcontroleModal(true)} bg="primary">
           {" "}
           Add New Address{" "}
@@ -252,15 +288,18 @@ const CheckoutForm = ({ children, pocketKhali }) => {
       </UserAddressGroup>
       {controleModal && (
         <Modal2 modalController={setModalcontroleModal}>
-          <AddressForm handleChange={handleChange} />
+          <AddressForm handleChange={handleChange} isFromCheckOut={true} />
           <Button onClick={addressSubmitHandle}>Submit</Button>
         </Modal2>
       )}
 
+      <PlaceOrder>
+        <BlockText size="md">Only CashOn Delivary is Available</BlockText>
+        <Button fontSize="lg" bg="primary" onClick={placeOrder}>
+          Place Order
+        </Button>
+      </PlaceOrder>
 
-      <BlockText>Only CashOn Delivary is Available</BlockText>
-
-      <Button onClick={placeOrder}>Place Order</Button>
     </CartInfoWrap>
   );
 };

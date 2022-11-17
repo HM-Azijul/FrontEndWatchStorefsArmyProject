@@ -108,7 +108,7 @@ export const getProductByCatagory = (selectedCatagory ,page , sorting , pageSize
     page = 1
   }
   if(!pageSize){
-    pageSize = 10
+    pageSize = 9
   }
   if(!sorting){
     sorting = `asc`
@@ -338,7 +338,6 @@ export const mutatedAddress = (addressInfo , user_id )=>{
 
 export const mutationOrder = (ordersItem , delivaryAddressRef , paymentMethod) =>{
   const ordersItemStr =  (JSON.stringify(ordersItem)).replace( /"/g ,"")
-  console.log(ordersItemStr)
 
   return(
     gql`

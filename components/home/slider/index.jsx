@@ -3,13 +3,10 @@ import Background from "../../shared/backgrounds";
 import Container from "../../shared/container";
 
 const handleClick = (index) => {
-  console.log(`${index} no item clicked`);
 };
 
 const Slider = () => {
   return (
-    <Background>
-      <Container>
         <Carousel
           autoPlay={true}
           infiniteLoop={true}
@@ -25,8 +22,7 @@ const Slider = () => {
           <img src="/images/slider/3.png" />
           <img src="/images/slider/4.png" />
         </Carousel>
-      </Container>
-    </Background>
+
   );
 };
 export default Slider;
